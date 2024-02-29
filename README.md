@@ -13,11 +13,18 @@ Dependencies (developed and tested, but other versions might work):
 ##
 
 How to run the examples:
+
+Methane:
 ```
 python3.11 example_1.py methane.xyz
 ```
+Water (with maximum overlap method):
 ```
 python3.11 example_2.py
+```
+Ethylene+:
+```
+python3.11 example_3.py
 ```
 
 ##
