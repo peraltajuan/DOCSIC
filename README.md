@@ -10,3 +10,14 @@ Dependencies:
 - Torch 2.2.1
 
 
+=====================================================
+
+
+On the HPCC:
+
+module load GCCcore/12.3.0 
+
+module load Python/3.11.3
+
+module load CUDA/12.3.0
+
