@@ -26,7 +26,7 @@ Ethylene+:
 ```
 python3.11 example_3.py
 ```
-generate cube files:
+Generate cube files:
 ```
 python3.11 example_3.py isobutene
 ```
