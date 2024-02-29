@@ -38,3 +38,9 @@ module load Python/3.11.3
 module load CUDA/12.3.0
 ```
 
+##
+To do:
+
+- Add cube file capability for localized orbitals.
+- Add finite difference check.
+  
