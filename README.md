@@ -16,7 +16,7 @@ How to run the examples:
 
 Methane:
 ```
-python3.11 example_1.py methane.xyz
+python3.11 example_1.py methane
 ```
 Water (with maximum overlap method):
 ```
@@ -26,7 +26,10 @@ Ethylene+:
 ```
 python3.11 example_3.py
 ```
-
+generate cube files:
+```
+python3.11 example_3.py isobutene
+```
 ##
 
 **On the HPCC:**
