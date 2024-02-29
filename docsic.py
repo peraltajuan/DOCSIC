@@ -11,6 +11,12 @@ from  pyscf.dft import rks, uks
 from  pyscf import  dft,  __config__
 from scipy.linalg import eigh
 
+#print(np.__version__)
+#print(scipy.__version__)
+#import pyscf
+#print(pyscf.__version__)
+#print(torch.__version__)
+
 
 def printM(a):
     for row in a:
@@ -38,13 +44,8 @@ def printLi(s,a):
 def lowdin_pop(mol, dm, S ):
     '''Lowdin population analysis
 
-    Returns:
-        A list : pop, charges
+    Prints Lowdin Population for charge and spin    
 
-        pop : nparray
-            population on each atomic orbitals
-        charges : nparray
-            charges
     '''
     print('')
     print(' Lodwin Population')
