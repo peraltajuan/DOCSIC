@@ -1,7 +1,7 @@
 # DOCSIC
-Density as Orbitals by Columns Self-Interaction Correction 
+## Density as Orbitals by Columns Self-Interaction Correction 
 
-Dependencies:
+Dependencies (developed and tested, but other versions might work):
 
 - Python 3.11
 - Numpy 1.25.0
@@ -10,14 +10,31 @@ Dependencies:
 - Torch 2.2.1
 
 
-=====================================================
+##
 
+How to run the examples:
+```
+python3.11 example_1.py methane.xyz
+```
+```
+python3.11 example_2.py
+```
 
-On the HPCC:
+##
 
-module load GCCcore/12.3.0 
+**On the HPCC:**
 
+use
+
+```
+module load GCCcore/12.3.0
+```
+
+```
 module load Python/3.11.3
+```
 
+```
 module load CUDA/12.3.0
+```
 
