@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
 
     mol = Mole()
-    mol.fromfile(filename=molecule,format='xyz')
+    mol.fromfile(filename=molecule+'.xyz',format='xyz')
     mol.basis = '6-31G**' 
     mol.cart=False
     mol.spin=spin

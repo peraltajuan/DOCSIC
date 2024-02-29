@@ -134,7 +134,7 @@ def dump_scf_summary(mf, verbose=logger.DEBUG):
 
 
 
-def docsic_rden_l(ks,P,nmo,S,spin=None):
+def docsic_rden_l(ks,P,nmo,S,spin=None,what='density'):
     '''
     Do the localization for one type of spin
     '''
@@ -169,9 +169,12 @@ def docsic_rden_l(ks,P,nmo,S,spin=None):
     P_loc = []
     for i in range(len(piv)): 
         P_loc.append(np.outer( X.T[i] , X.T[i] ) )
-    return np.array(P_loc)
-
-
+    if what =='density':
+        return np.array(P_loc)
+    elif what =='orbital':
+        return np.array(X.T)
+    else:
+        return np.array(P_loc)
 
 
 
