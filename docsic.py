@@ -11,12 +11,6 @@ from  pyscf.dft import rks, uks
 from  pyscf import  dft,  __config__
 from scipy.linalg import eigh
 
-print(np.__version__)
-print(scipy.__version__)
-import pyscf
-print(pyscf.__version__)
-print(torch.__version__)
-
 
 def printM(a):
     for row in a:
