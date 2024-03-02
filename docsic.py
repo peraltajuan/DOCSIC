@@ -3,7 +3,7 @@ from pyscf import lib
 import scipy
 import torch
 from scipy.linalg import qr
-from numpy.linalg import inv
+from scipy.linalg import inv, pinv
 from torch.autograd import Function
 import numpy as np
 from  pyscf.scf import  hf, uhf, chkfile
@@ -139,7 +139,7 @@ def docsic_rden_l(ks,P,nmo,S,spin=None,what='density'):
     Do the localization for one type of spin
     '''
     S12 = scipy.linalg.sqrtm(S).real  # this should be done only once 
-    Sm12 = inv(S12)  # this should be done only once 
+    Sm12 = pinv(S12,rtol=1e-8)  # this should be done only once 
     Pb = S12@P@S12
     if 'sic_iter' not in dir(rks): rks.sic_iter = 1
 # THIS  needs a revision
@@ -181,7 +181,7 @@ def docsic_rden_l(ks,P,nmo,S,spin=None,what='density'):
 def get_vsic(rks,mol,vhj,vxc,P,spin=None):
     ov = mol.intor('int1e_ovlp')
     ov12 = scipy.linalg.sqrtm(ov).real  # this should be done only once 
-    ovm12 = scipy.linalg.inv(ov12)  # this should be done only once 
+    ovm12 = pinv(ov12,rtol=1e-8)  # this should be done only once 
 
     ht = torch.tensor( vhj + vxc  , dtype=torch.float64, requires_grad=False)
     P1 = torch.tensor( P  , dtype=torch.float64, requires_grad=True)
@@ -808,7 +808,7 @@ def loc_mat(ks,P,nmo,S,fock,spin=None,virtual=False):
     Do the localization for one type of spin
     '''
     S12 = scipy.linalg.sqrtm(S).real  # this should be done only once 
-    Sm12 = inv(S12)  # this should be done only once 
+    Sm12 = pinv(S12,rtol=1e-8)  # this should be done only once 
     Pb = S12@P@S12
     print('\n', '*'*75)
     if spin =='a' : print(' ' ,'*** SPIN ALPHA '*5)    
@@ -880,7 +880,7 @@ def loc_mat(ks,P,nmo,S,fock,spin=None,virtual=False):
 def get_vsic(rks,mol,vhj,vxc,P,spin=None):
     ov = mol.intor('int1e_ovlp')
     ov12 = scipy.linalg.sqrtm(ov).real  # this should be done only once 
-    ovm12 = scipy.linalg.inv(ov12).real  # this should be done only once 
+    ovm12 = scipy.linalg.pinv(ov12,rtol=1e-8)  # this should be done only once 
 
     ht = torch.tensor( vhj + vxc  , dtype=torch.float64, requires_grad=False)
     P1 = torch.tensor( P  , dtype=torch.float64, requires_grad=True)
