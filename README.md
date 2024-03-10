@@ -51,7 +51,7 @@ module load CUDA/12.3.0
 ##
 To do:
 
-- Add finite difference check.
-- Sqrtm + inv for torch can me replaced by one inverse-sqrtm instead. It saves one step.
-    
+- Sqrtm + inv for torch can be replaced by one inverse-sqrtm instead. It saves one step.
+- Add check with itertools.permutations
+- Add option to fix the SIC KS matrices in the AO basis (save time re-computing them).    
   
