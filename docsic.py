@@ -410,9 +410,7 @@ def get_veff_usic(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1):
     ks.ecoul =ecoul
     vhf = lib.tag_array(veff, ecoul=ecoul, exc=exc, vj=vj, vk=vk,esic=esic)
 
-
     return vhf
-
 
 
 
@@ -443,9 +441,21 @@ def energy_sic(dm1, ks,s,dm2):
     dm2 = make_square(dm2)
     if s==0: dm =[dm1,dm2]
     if s==1: dm =[dm2,dm1]
-    v = get_veff_usic(ks, mol=ks.mol, dm=dm, hermi=0 )
+    v = get_veff_usic(ks, ks.mol, dm )
     esic = v.esic.real
     return esic
+
+
+def d_energy_sic(dm1, ks,s,dm2):
+    '''
+    Wrapper to  get_veff_usic to get only the SIC KS matrix
+    '''
+    dm1 = make_square(dm1)
+    dm2 = make_square(dm2)
+    if s==0: dm =[dm1,dm2]
+    if s==1: dm =[dm2,dm1]
+    get_veff_usic(ks, ks.mol, dm )
+    return ks.vsic [s]
 
 
 def energy_sic_piv(dm, ks,piv):
@@ -458,11 +468,11 @@ def energy_sic_piv(dm, ks,piv):
     rks.piv_b  = piv[1]
 
 
-    v = get_veff_usic(ks, mol=ks.mol, dm=dm, hermi=0 )
+    v = get_veff_usic(ks, ks.mol, dm )
     esic = v.esic.real
     ecoul = ks.ecoul.real
     exc = ks.exc.real
-    return exc+ecoul+esic
+    return   esic  #exc+ecoul+esic
 
 
 
@@ -486,11 +496,11 @@ def energy_uelec(ks, dm=None, h1e=None, vhf=None):
        if dm is None: dm = ks.make_rdm1()
        if h1e is None: h1e = ks.get_hcore()
        if vhf is None or getattr(vhf, 'ecoul', None) is None:
-           vhf = ks.get_veff_usic(ks, ks.mol, dm)
+           vhf = get_veff_usic(ks, ks.mol, dm)
        dm = dm[0] + dm[1]
        e1 = np.einsum('ij,ji->', h1e, dm).real
-       ecoul = vhf.ecoul.real
-       exc = vhf.exc.real
+       ecoul = ks.ecoul.real
+       exc = ks.exc.real
        esic = vhf.esic.real
        e2 = ecoul + exc
        nuc = ks.energy_nuc()
