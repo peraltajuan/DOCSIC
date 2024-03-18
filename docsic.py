@@ -133,8 +133,7 @@ def dump_scf_summary(mf, verbose=logger.DEBUG):
 
 
 
-
-def docsic_rden_l(ks,P,nmo,S,spin=None,what='density'):
+def docsic_rden_l(ks,P,nmo,S,spin=None,what='density',prt=True):
     '''
     Do the localization for one type of spin
     '''
@@ -148,7 +147,7 @@ def docsic_rden_l(ks,P,nmo,S,spin=None,what='density'):
 
     if  'reuse_piv' in dir(ks): 
          if ks.reuse_piv and rks.sic_iter > 1:
-             print('Reusing the pivoting array for doc-sic spin '+ spin)
+             if prt: print('Reusing the pivoting array for doc-sic spin '+ spin)
              reuse = True
 
     if not reuse:
@@ -169,56 +168,14 @@ def docsic_rden_l(ks,P,nmo,S,spin=None,what='density'):
     P_loc = []
     for i in range(len(piv)): 
         P_loc.append(np.outer( X.T[i] , X.T[i] ) )
-    if what =='density':
+    if what =='density' and prt:
         return np.array(P_loc)
-    elif what =='orbital':
+    elif what =='orbital' and prt:
         return np.array(X.T)
-    else:
+    elif prt:
         return np.array(P_loc)
-
-
-
-def get_vsic(rks,mol,vhj,vxc,P,spin=None):
-    ov = mol.intor('int1e_ovlp')
-    ov12 = scipy.linalg.sqrtm(ov).real  # this should be done only once 
-    ovm12 = pinv(ov12,rtol=1e-8)  # this should be done only once 
-
-    ht = torch.tensor( vhj + vxc  , dtype=torch.float64, requires_grad=False)
-    P1 = torch.tensor( P  , dtype=torch.float64, requires_grad=True)
-    S12 = torch.tensor( ov12  , dtype=torch.float64, requires_grad=False)
-    Sm12 = torch.tensor( ovm12  , dtype=torch.float64, requires_grad=False)
-    
-    P0 = torch.mm(P1 , S12) 
-    Pt = torch.mm(S12, P0)
-
-    if spin=='a' : piv = rks.piv_a
-    if spin=='b' : piv = rks.piv_b
-    if spin==None: piv = rks.piv
-    Xt = Pt[:,piv]
-    
-    Xtt= torch.transpose(Xt,0,1)
-    St  = torch.mm( Xtt  , Xt) 
-    St12 = sqrtm(St).real
-    Stm12 = torch.linalg.inv(St12)
-    z0 = torch.mm(Xt ,  Stm12) 
-    z = torch.mm(Sm12 ,  z0) 
-    XT  = torch.transpose( z , 0,1 )
-
-    P_loc = torch.tensor(() ,dtype=torch.float64, requires_grad=True ) # torch.Tensor()
-    
-    if spin=='a' : pivs ='alpha'
-    if spin=='b' : pivs =' beta'
-    print('Pivoting vector '+pivs , piv)
-    for i in range( len(XT) ): 
-        Pi = torch.outer( XT[i] , XT[i] )
-        P_loc = torch.cat((P_loc, Pi.unsqueeze(0))  ,  dim=0 )  
-
-    ESICt =   torch.sum( ht * P_loc ) 
-    ESICt.backward()
-    dEdP = P1.grad
-
-    dedp = dEdP.detach().numpy()
-    return -0.5*(dedp + dedp.T.conj()).real 
+    else:
+        return np.array(P_loc), np.linalg.eigvalsh(St), np.linalg.cond(St)
 
 
 
@@ -230,8 +187,7 @@ def get_vsic(rks,mol,vhj,vxc,P,spin=None):
 
 
 
-
-def get_veff_usic(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1):
+def get_veff_usic(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1, prt=True):
     '''Coulomb + XC +SIC functional for UKS.  See pyscf/dft/rks.py
     **** This is an in-house modified version to work with doc-sic ****
     :func:`get_veff` fore more details.
@@ -282,30 +238,38 @@ def get_veff_usic(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1):
              scale_xc = 1.00
              if calc_vsic:
 
-                P_loc_a = docsic_rden_l(ks,dm[0],nocc_a ,S,spin='a')  
-
+                if prt: 
+                  P_loc_a = docsic_rden_l(ks,dm[0],nocc_a ,S,spin='a',prt=prt)  
+                else:
+                  P_loc_a,eig_a,cond_a = docsic_rden_l(ks,dm[0],nocc_a ,S,spin='a',prt=prt)  
+                 
                 if nocc_b == 1: 
                    P_loc_b = np.asarray([dm[1]])
                    rks.piv_b  = [0]
                 else:
-                   P_loc_b = docsic_rden_l(ks,dm[1],nocc_b ,S,spin='b')  
- 
+                   if prt: 
+                     P_loc_b = docsic_rden_l(ks,dm[1],nocc_b ,S,spin='b',prt=prt)  
+                   else:
+                     P_loc_b,eig_b,cond_b = docsic_rden_l(ks,dm[1],nocc_b ,S,spin='b',prt=prt)  
+                  
                 nsic, excsic1, v1sic = ni.nr_uks(mol, ks.grids, ks.xc, [P_loc_a,0.0*P_loc_a], max_memory=max_memory)
                 nsic_a = nsic[0]
                 excsic_a = excsic1*scale_xc
                 v1sic_a = v1sic[0]*scale_xc
-                print('')
-                print('Evaluating self-XC for SIC alpha')
-                printL(nsic_a)
-                printL(excsic_a)
+                if prt: 
+                   print('')
+                   print('Evaluating self-XC for SIC alpha')
+                   printL(nsic_a)
+                   printL(excsic_a)
                 excsic_a = sum(excsic_a)
                 nsic, excsic1, v1sic = ni.nr_uks(mol, ks.grids, ks.xc, [P_loc_b,0.0*P_loc_b], max_memory=max_memory)
                 nsic_b = nsic[0]
                 excsic_b = excsic1*scale_xc
                 v1sic_b = v1sic[0]*scale_xc
-                print('Evaluating self-XC for SIC beta')
-                printL(nsic_b)
-                printL(excsic_b)
+                if prt:
+                   print('Evaluating self-XC for SIC beta')
+                   printL(nsic_b)
+                   printL(excsic_b)
                 excsic_b = sum(excsic_b)
 
     
@@ -378,11 +342,12 @@ def get_veff_usic(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1):
     
            ecoul1_a = np.einsum('kij,kji', P_loc_a, v1j_a).real  * .5
            ecoul1_b = np.einsum('kij,kji', P_loc_b, v1j_b).real  * .5
-           print('Evaluating self-Hartree for SIC alpha')
-           printL(e1_a) 
-           print('Evaluating self-Hartree for SIC beta')
-           printL(e1_b) 
-           print('')
+           if prt: 
+              print('Evaluating self-Hartree for SIC alpha')
+              printL(e1_a) 
+              print('Evaluating self-Hartree for SIC beta')
+              printL(e1_b) 
+              print('')
            scale_sic = ks.scale_sic # 0.2 # /(1.+1./rks.sic_iter**2)
            esic = (-ecoul1_a -ecoul1_b -excsic_a -excsic_b)*scale_sic
 
@@ -390,8 +355,8 @@ def get_veff_usic(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1):
 
 
     if (ks.sic == 'doc-sic' and calc_vsic):
-       vsic_a = get_vsic(rks,mol,v1j_a,v1sic_a,dm[0],spin='a')*scale_sic
-       vsic_b = get_vsic(rks,mol,v1j_b,v1sic_b,dm[1],spin='b')*scale_sic
+       vsic_a = get_vsic(rks,mol,v1j_a,v1sic_a,dm[0],spin='a',prt=prt)*scale_sic
+       vsic_b = get_vsic(rks,mol,v1j_b,v1sic_b,dm[1],spin='b',prt=prt)*scale_sic
        veff = vxc + np.asarray((vsic_a,vsic_b))  # the plus is correct
        rks.esic = esic
     else:
@@ -401,7 +366,7 @@ def get_veff_usic(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1):
     if not calc_vsic:
        veff = vxc + ks.vsic
        esic = rks.esic
-       print('Reusing VSIC')
+       if prt: print('Reusing VSIC')
     else:
        if ks.sic == 'doc-sic':
            ks.vxc  = vxc
@@ -409,7 +374,13 @@ def get_veff_usic(ks, mol=None, dm=None, dm_last=0, vhf_last=0, hermi=1):
     ks.exc = exc
     ks.ecoul =ecoul
     vhf = lib.tag_array(veff, ecoul=ecoul, exc=exc, vj=vj, vk=vk,esic=esic)
-
+    ks.piv_a = rks.piv_a
+    ks.piv_b = rks.piv_b 
+    if not prt:
+      ks.eig_a = eig_a
+      ks.eig_b = eig_b
+      ks.cond_a = cond_a
+      ks.cond_b = cond_b
     return vhf
 
 
@@ -441,9 +412,9 @@ def energy_sic(dm1, ks,s,dm2):
     dm2 = make_square(dm2)
     if s==0: dm =[dm1,dm2]
     if s==1: dm =[dm2,dm1]
-    v = get_veff_usic(ks, ks.mol, dm )
+    v = get_veff_usic(ks, ks.mol, dm, prt=False )
     esic = v.esic.real
-    return esic
+    return esic, ks.piv_a, ks.piv_b
 
 
 def d_energy_sic(dm1, ks,s,dm2):
@@ -454,8 +425,8 @@ def d_energy_sic(dm1, ks,s,dm2):
     dm2 = make_square(dm2)
     if s==0: dm =[dm1,dm2]
     if s==1: dm =[dm2,dm1]
-    get_veff_usic(ks, ks.mol, dm )
-    return ks.vsic [s]
+    get_veff_usic(ks, ks.mol, dm , prt=False)
+    return ks.vsic[s]
 
 
 def energy_sic_piv(dm, ks,piv):
@@ -468,11 +439,16 @@ def energy_sic_piv(dm, ks,piv):
     rks.piv_b  = piv[1]
 
 
-    v = get_veff_usic(ks, ks.mol, dm )
+    v = get_veff_usic(ks, ks.mol, dm, prt=False )
     esic = v.esic.real
     ecoul = ks.ecoul.real
     exc = ks.exc.real
-    return   esic  #exc+ecoul+esic
+    eig_a = min(ks.eig_a)
+    eig_b = min(ks.eig_b)
+    cond_a = abs(ks.cond_a)
+    cond_b = abs(ks.cond_b)
+    
+    return   esic, min(eig_a,eig_b), max(cond_a,cond_b)   #exc+ecoul+esic
 
 
 
@@ -887,7 +863,7 @@ def loc_mat(ks,P,nmo,S,fock,spin=None,virtual=False):
 
 
 
-def get_vsic(rks,mol,vhj,vxc,P,spin=None):
+def get_vsic(rks,mol,vhj,vxc,P,spin=None,prt=True):
     ov = mol.intor('int1e_ovlp')
     ov12 = scipy.linalg.sqrtm(ov).real  # this should be done only once 
     ovm12 = scipy.linalg.pinv(ov12,rtol=1e-8)  # this should be done only once 
@@ -917,7 +893,7 @@ def get_vsic(rks,mol,vhj,vxc,P,spin=None):
 
     if spin=='a' : pivs ='alpha'
     if spin=='b' : pivs =' beta'
-    printLi('Pivoting vector: '+pivs,piv)
+    if prt: printLi('Pivoting vector: '+pivs,piv)
     for i in range( len(XT) ): 
         Pi = torch.outer( XT[i] , XT[i] )
         P_loc = torch.cat((P_loc, Pi.unsqueeze(0))  ,  dim=0 )  
@@ -927,7 +903,12 @@ def get_vsic(rks,mol,vhj,vxc,P,spin=None):
     dEdP = P1.grad
 
     dedp = dEdP.detach().numpy()
-    return -0.5*(dedp + dedp.T.conj()).real 
+    R =  -0.5*(dedp + dedp.T.conj()).real
+    R -= 0.5*np.diag(np.diag(R))
+   
+#    R = 0.5*R + 0.5*np.eye(Rd)
+    return R
+
 
 
 

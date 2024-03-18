@@ -70,7 +70,8 @@ if __name__ == "__main__":
     dm2 = mf.make_rdm1()[SPIN-1]
     Der_an = d_energy_sic(dm1,mf,SPIN,dm2)
     Der_an = make_square(Der_an)
-    Der_s = 0.5*(Der_an + Der_an.T)
+#    Der_s = 0.5*(Der_an + Der_an.T)
+    Der_s = Der_an
 
 
 
@@ -80,7 +81,7 @@ if __name__ == "__main__":
 
    
     Nao = len(dm1)
-    nelem = 10  
+    nelem = 12
 
     Lmax = locateLargest(np.asarray(dm1),nelem)
     print(Lmax)
@@ -99,13 +100,16 @@ if __name__ == "__main__":
         print(f'      Step {nn+1:3d} of {len(Lmax):3d}')
         print('***********************************************')
         DM[i,j] = dm1[i,j] + epsilon
-        DM[j,i] = dm1[j,i] + epsilon
-        Eplus = energy_sic(DM,mf,SPIN,dm2)
+        if i !=j : DM[j,i] = dm1[j,i] + epsilon
+        Eplus,pa,pb = energy_sic(DM,mf,SPIN,dm2)
         DM[i,j] = dm1[i,j] - epsilon
-        DM[j,i] = dm1[j,i] - epsilon
-        Eminus = energy_sic(DM,mf,SPIN,dm2)
+        if i!=j : DM[j,i] = dm1[j,i] - epsilon
+        Eminus,pa,pb = energy_sic(DM,mf,SPIN,dm2)
         Der_sym[i,j]=(Eplus-Eminus)/2/epsilon
         Der_sym[j,i]=(Eplus-Eminus)/2/epsilon
+
+        print('Numer ',i,j, Der_sym[i,j])
+        print('Analy ',i,j, Der_s[i,j])
         Dev += (Der_sym[i,j] - Der_s[i,j])**2
         Dev += (Der_sym[j,i] - Der_s[j,i])**2
     Dev = np.sqrt(Dev)
