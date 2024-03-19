@@ -414,7 +414,10 @@ def energy_sic(dm1, ks,s,dm2):
     if s==1: dm =[dm2,dm1]
     v = get_veff_usic(ks, ks.mol, dm, prt=False )
     esic = v.esic.real
-    return esic, ks.piv_a, ks.piv_b
+    exc = v.exc
+    ecoul = v.ecoul
+    eel = esic + exc + ecoul
+    return eel, ks.piv_a, ks.piv_b
 
 
 def d_energy_sic(dm1, ks,s,dm2):
@@ -426,7 +429,9 @@ def d_energy_sic(dm1, ks,s,dm2):
     if s==0: dm =[dm1,dm2]
     if s==1: dm =[dm2,dm1]
     get_veff_usic(ks, ks.mol, dm , prt=False)
-    return ks.vsic[s]
+    v = ks.vxc[s]
+    vsic = ks.vsic[s]
+    return v+vsic  # ks.vsic[s]
 
 
 def energy_sic_piv(dm, ks,piv):
@@ -904,9 +909,7 @@ def get_vsic(rks,mol,vhj,vxc,P,spin=None,prt=True):
 
     dedp = dEdP.detach().numpy()
     R =  -0.5*(dedp + dedp.T.conj()).real
-    R -= 0.5*np.diag(np.diag(R))
-   
-#    R = 0.5*R + 0.5*np.eye(Rd)
+#    R -= .5*np.diag( np.diag(R))
     return R
 
 

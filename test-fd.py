@@ -100,14 +100,16 @@ if __name__ == "__main__":
         print(f'      Step {nn+1:3d} of {len(Lmax):3d}')
         print('***********************************************')
         DM[i,j] = dm1[i,j] + epsilon
-        if i !=j : DM[j,i] = dm1[j,i] + epsilon
+#        if i!=j : DM[j,i] = dm1[j,i] + epsilon
+        DM[j,i] = DM[i,j]
         Eplus,pa,pb = energy_sic(DM,mf,SPIN,dm2)
         DM[i,j] = dm1[i,j] - epsilon
-        if i!=j : DM[j,i] = dm1[j,i] - epsilon
+#        if i!=j : DM[j,i] = dm1[j,i] - epsilon
+        DM[j,i] = DM[i,j]
         Eminus,pa,pb = energy_sic(DM,mf,SPIN,dm2)
-        Der_sym[i,j]=(Eplus-Eminus)/2/epsilon
-        Der_sym[j,i]=(Eplus-Eminus)/2/epsilon
-
+        if i!=j : Der_sym[i,j]=(Eplus-Eminus)/2/epsilon
+        if i!=j : Der_sym[j,i]=(Eplus-Eminus)/2/epsilon
+        if i==j : Der_sym[j,i]=(Eplus-Eminus)/epsilon
         print('Numer ',i,j, Der_sym[i,j])
         print('Analy ',i,j, Der_s[i,j])
         Dev += (Der_sym[i,j] - Der_s[i,j])**2
