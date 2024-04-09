@@ -5,9 +5,8 @@ This code implements self-consistently the Perdew-Zunger self-interaction correc
 
 The resulting localized orbitals are identical to those obtained with the SCDM-L method reported in 
 
-Fuemmeler, E. G.; Damle, A.; DiStasio, R. A. J. Selected Columns of the Density
-Matrix in an Atomic Orbital Basis I: An Intrinsic and Non-iterative Orbital Localization
-Scheme for the Occupied Space. J. Chem. Theory Comput. 2023, 19, 8572–8586.
+Selected Columns of the Density Matrix in an Atomic Orbital Basis I: An Intrinsic and Non-iterative Orbital Localization
+Scheme for the Occupied Space, E. G. Fuemmeler, A. Damle,  R. A. J. DiStasio,  J. Chem. Theory Comput. 2023, 19, 8572–8586.
 
 Details will be published as
 
