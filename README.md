@@ -1,8 +1,9 @@
 # DOCSIC
 ## Density as Orbitals by Columns Self-Interaction Correction 
 
-This code implements self-consistently the Perdew-Zunger self-interaction correction to approximate density functional calculations using orbitals taken from columns of the density matrix. 
-The resulting localized orbitals are identical to the SCDM-L method reported in 
+This code implements self-consistently the Perdew-Zunger self-interaction correction to approximate density functional calculations using orbitals taken from columns of the density matrix. Give a set of indices chosen from a pivoted QR decomposition of the density matrix, the energy is minimized using standard self-consistent iteration with an effective self-interaction multiplicative term added to the generalized Kohn-Sham Hamiltonian. 
+
+The resulting localized orbitals are identical to those obtained with the SCDM-L method reported in 
 
 Fuemmeler, E. G.; Damle, A.; DiStasio, R. A. J. Selected Columns of the Density
 Matrix in an Atomic Orbital Basis I: An Intrinsic and Non-iterative Orbital Localization
