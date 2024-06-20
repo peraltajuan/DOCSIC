@@ -1,7 +1,8 @@
 # DOCSIC
 ## Density as Orbitals by Columns Self-Interaction Correction 
 
-This code implements self-consistently the Perdew-Zunger self-interaction correction to approximate density functional calculations using orbitals taken from columns of the density matrix. Give a set of indices chosen from a pivoted QR decomposition of the density matrix, the energy is minimized using standard self-consistent iteration with an effective self-interaction multiplicative term added to the generalized Kohn-Sham Hamiltonian. 
+This code implements self-consistently the Perdew-Zunger self-interaction correction to approximate density functional calculations using orbitals taken from columns of the density matrix. 
+Given a set of indices chosen from a pivoted QR decomposition of the density matrix, the energy is minimized using standard self-consistent iteration with an effective self-interaction multiplicative term added to the generalized Kohn-Sham Hamiltonian (just like in standard Kohn-Sham). 
 
 The resulting localized orbitals are identical to those obtained with the SCDM-L method reported in 
 
@@ -10,7 +11,7 @@ Scheme for the Occupied Space, E. G. Fuemmeler, A. Damle,  R. A. J. DiStasio,  J
 
 Details will be published as
 
-A Mean-field, Orbital-by-orbital Method for Self-interaction Correction, 
+DOCSIC: A Mean-field, Orbital-by-orbital Method for Self-interaction Correction, 
 J. E. Peralta, V. Barone, J. I. Melo, D. R. Alcoba, L.
 Lain, A. Torre, G. E. Massaccesi, and O. B. Oña.
 
@@ -46,6 +47,7 @@ Generate cube files:
 python3.11 example_3.py isobutene
 ```
 
+Please email to juan.peralta (at) cmich.edu or dalcoba (at) df.uba.ar for questions/comments. We answer!
 
  
   
